@@ -13,6 +13,6 @@ Repository = "https://github.com/PeterMikhai/Doom_Flux_NodePack.git"
 # New Features = "https://github.com/USERNAME/repo/issues"
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "@petermikhai"
 DisplayName = "DoomFLUX Nodes"
-Icon = ""
+Icon = "https://raw.githubusercontent.com/PeterMikhai/Doom_Flux_NodePack/master/assets/icon.png"
