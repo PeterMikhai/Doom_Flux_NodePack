@@ -1,17 +1,18 @@
-#  Edit the following fields to match your project
-
 [project]
-name = "comfyui-customnodes-template"
-description = "Template repository for custom nodes from [ComfyUI-CustomNodes-Template](https://github.com/jhj0517/ComfyUI-CustomNodes-Template)."
+name = "comfyui-doomflux-nodes"
+description = "Custom nodes for FLUX models, including a loader and specialized samplers for standard and inpaint generation."
 version = "1.0.0"
-license = {file = "LICENSE"}
-dependencies = ["",]  # e.g.) ["numpy==1.18.1", ]
+license = "MIT"
+authors = [
+    { name = "PeterMikhai", email = "petemaster@mail.ru" }
+]
 
 [project.urls]
-Repository = "https://github.com/jhj0517/ComfyUI-CustomNodes-Template"
-#  Used by Comfy Registry https://comfyregistry.org
+Repository = "https://github.com/PeterMikhai/Doom_Flux_NodePack.git"
+# Bug Tracker = "https://github.com/USERNAME/repo/issues"
+# New Features = "https://github.com/USERNAME/repo/issues"
 
 [tool.comfy]
-PublisherId = "jhj0517"
-DisplayName = "ComfyUI-CustomNodes-Template"
+PublisherId = ""
+DisplayName = "DoomFLUX Nodes"
 Icon = ""

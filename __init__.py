@@ -1,13 +1,23 @@
-from .nodes import *
+# Импортируем все классы узлов из файла nodes.py
+from .nodes import DoomFluxLoader, DoomFluxSampler, DoomFluxInpaintSampler
 
-
-#  Map all your custom nodes classes with the names that will be displayed in the UI.
+# Словарь для сопоставления внутренних имен классов с их реализациями
 NODE_CLASS_MAPPINGS = {
-    "(Down)Load My Model": MyModelLoader,
-    "Calculate Plus": CalculatePlus,
-    "Calculate Minus": CalculateMinus,
-    "Example Output Node": ExampleOutputNode,
+    "DoomFluxLoader": DoomFluxLoader,
+    "DoomFluxSampler": DoomFluxSampler,
+    "DoomFluxInpaintSampler": DoomFluxInpaintSampler,
 }
 
+# Словарь для сопоставления внутренних имен с отображаемыми именами в интерфейсе
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "DoomFluxLoader": "DoomFLUX Loader",
+    "DoomFluxSampler": "DoomFLUX Sampler",
+    "DoomFluxInpaintSampler": "DoomFLUX Inpaint Sampler",
+}
 
-__all__ = ['NODE_CLASS_MAPPINGS']
+# Сообщаем, что экспорт завершен
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
+
+print("------------------------------------------")
+print("DoomFLUX Nodes: Successfully loaded.")
+print("------------------------------------------")

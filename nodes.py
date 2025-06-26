@@ -1,152 +1,228 @@
-#  Package Modules
 import os
-from typing import Union, BinaryIO, Dict, List, Tuple, Optional
-import time
-
-#  ComfyUI Modules
+import torch
+import nodes
+import comfy.sd
+import comfy.sample
+import comfy.utils
+import comfy.samplers
+import comfy.model_management
+import comfy.model_sampling
 import folder_paths
-from comfy.utils import ProgressBar
+import latent_preview
+import node_helpers
 
-#  Your Modules
-from .modules.calculator import CalculatorModel
+# --- Общий вспомогательный класс ---
+# Этот класс используется обоими семплерами. Мы определяем его один раз.
+class Guider_Basic(comfy.samplers.CFGGuider):
+    def set_conds(self, positive):
+        self.inner_set_conds({"positive": positive})
 
-
-#  Basic practice to get paths from ComfyUI
-custom_nodes_script_dir = os.path.dirname(os.path.abspath(__file__))
-custom_nodes_model_dir = os.path.join(folder_paths.models_dir, "my-custom-nodes")
-custom_nodes_output_dir = os.path.join(folder_paths.get_output_directory(), "my-custom-nodes")
-
-
-#  These are example nodes that only contains basic functionalities with some comments.
-#  If you need detailed explanation, please refer to : https://docs.comfy.org/essentials/custom_node_walkthrough
-#  First Node:
-class MyModelLoader:
-    #  Define the input parameters of the node here.
+# --- Узел 1: Загрузчик моделей ---
+class DoomFluxLoader:
     @classmethod
-    def INPUT_TYPES(s):
-        my_models = ["Model A", "Model B", "Model C"]
-
+    def INPUT_TYPES(cls):
         return {
-            #  If the key is "required", the value must be filled.
             "required": {
-                #  `my_models` is the list, so it will be shown as a dropdown menu in the node. ( So that user can select one of them. )
-                #  You must provide the value in the tuple format. e.g. ("value",) or (3,) or ([1, 2],) etc.
-                "model": (my_models,),
-                "device": (['cuda', 'cpu', 'auto'],),
-            },
-            #  If the key is "optional", the value is optional.
-            "optional": {
-                "compute_type": (['float32', 'float16'],),
+                "model_name": (folder_paths.get_filename_list("diffusion_models"),),
+                "vae_name": (folder_paths.get_filename_list("vae") + ["Baked VAE"],),
+                "clip_name1": (folder_paths.get_filename_list("text_encoders") + ["None"],),
+                "clip_name2": (folder_paths.get_filename_list("text_encoders") + ["None"],),
+                "weight_dtype": (["default", "fp8_e4m3fn", "fp8_e4m3fn_fast", "fp8_e5m2"],),
             }
         }
 
-    #  Define these constants inside the node.
-    #  `RETURN_TYPES` is important, as it limits the parameter types that can be passed to the next node, in `INPUT_TYPES()` above.
-    RETURN_TYPES = ("MY_MODEL",)
-    RETURN_NAMES = ("my_model",)
-    #  `FUNCTION` is the function name that will be called in the node.
-    FUNCTION = "load_model"
-    #  `CATEGORY` is the category name that will be used when user searches the node.
-    CATEGORY = "CustomNodesTemplate"
+    RETURN_TYPES = ("MODEL", "VAE", "CLIP")
+    FUNCTION = "load"
+    CATEGORY = "DoomFlux"
 
-    #  In the function, use same parameter names as you specified in `INPUT_TYPES()`
-    def load_model(self,
-                   model: str,
-                   device: str,
-                   compute_type: Optional[str] = None,
-                   ) -> Tuple[CalculatorModel]:
-        calculator_model = CalculatorModel()
-        calculator_model.load_model(model, device, compute_type)
+    def load(self, model_name, vae_name, clip_name1, clip_name2, weight_dtype):
+        vae_name = vae_name if vae_name and vae_name != "Baked VAE" else None
+        clip_name1 = clip_name1 if clip_name1 and clip_name1 != "None" else None
+        clip_name2 = clip_name2 if clip_name2 and clip_name2 != "None" else None
+        weight_dtype = weight_dtype if weight_dtype else "default"
+        
+        model_options = {}
+        if weight_dtype == "fp8_e4m3fn":
+            model_options["dtype"] = torch.float8_e4m3fn
+        elif weight_dtype == "fp8_e4m3fn_fast":
+            model_options["dtype"] = torch.float8_e4m3fn
+            model_options["fp8_optimizations"] = True
+        elif weight_dtype == "fp8_e5m2":
+            model_options["dtype"] = torch.float8_e5m2
+            
+        model_path = folder_paths.get_full_path_or_raise("diffusion_models", model_name)
+        model = comfy.sd.load_diffusion_model(model_path, model_options=model_options)
 
-        #  You can use `comfy.utils.ProgressBar` to show the progress of the process.
-        #  First, initialize the total amount of the process.
-        total_steps = 5
-        comfy_pbar = ProgressBar(total_steps)
-        #  Then, update the progress.
-        for i in range(1, total_steps):
-            time.sleep(1)
-            comfy_pbar.update(i)  #  Alternatively, you can use `comfy_pbar.update_absolute(value)` to update the progress with absolute value.
+        vae = None
+        if vae_name:
+            vae_path = folder_paths.get_full_path_or_raise("vae", vae_name)
+            vae_sd = comfy.utils.load_torch_file(vae_path)
+            vae = comfy.sd.VAE(sd=vae_sd)
 
-        #  Return the model as a tuple.
-        return (calculator_model, )
+        clip_paths = []
+        if clip_name1:
+            clip_paths.append(folder_paths.get_full_path_or_raise("text_encoders", clip_name1))
+        if clip_name2:
+            clip_paths.append(folder_paths.get_full_path_or_raise("text_encoders", clip_name2))
 
+        clip = None
+        if clip_paths:
+            clip = comfy.sd.load_clip(ckpt_paths=clip_paths, embedding_directory=folder_paths.get_folder_paths("embeddings"), clip_type=comfy.sd.CLIPType.FLUX)
 
-#  Second Node
-class CalculatePlus:
+        return (model, vae, clip)
+
+# --- Узел 2: Основной семплер ---
+class DoomFluxSampler:
+    def __init__(self):
+        self.device = comfy.model_management.intermediate_device()
+
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "model": ("MY_MODEL", ),
-            },
-            #  Specify the parameters with type and default value.
-            "optional": {
-                "a": ("INT", {"default": 5}),
-                "b": ("INT", {"default": 10}),
+                "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                "model": ("MODEL",), "scheduler": (comfy.samplers.SCHEDULER_NAMES,),
+                "steps": ("INT", {"default": 20, "min": 1, "max": 10000}),
+                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0}),
+                "sampler_name": (comfy.samplers.SAMPLER_NAMES,),
+                "conditioning": ("CONDITIONING",),
+                "guidance": ("FLOAT", {"default": 3.5, "min": 0.0, "max": 100.0, "step": 0.1}),
+                "max_shift": ("FLOAT", {"default": 1.15, "min": 0.0, "max": 100.0, "step":0.01}),
+                "base_shift": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 100.0, "step":0.01}),
+                "width": ("INT", {"default": 1024, "min": 16, "max": nodes.MAX_RESOLUTION, "step": 8}),
+                "height": ("INT", {"default": 1024, "min": 16, "max": nodes.MAX_RESOLUTION, "step": 8}),
+                "batch_size": ("INT", {"default": 1, "min": 1, "max": 4096}),
             }
         }
 
-    RETURN_TYPES = ("INT",)
-    RETURN_NAMES = ("plus_value",)
-    FUNCTION = "plus"
-    CATEGORY = "CustomNodesTemplate"
+    RETURN_TYPES = ("LATENT", "LATENT")
+    RETURN_NAMES = ("output", "denoised_output")
+    FUNCTION = "sample"
+    CATEGORY = "DoomFlux/sampling"
 
-    def plus(self,
-             model: CalculatorModel,
-             a: Optional[int],
-             b: Optional[int],
-             ) -> Tuple[int]:
-        result = model.plus(a, b)
-        return (result, )
+    def sample(self, noise_seed, model, scheduler, steps, denoise, sampler_name, conditioning, guidance, max_shift, base_shift, width, height, batch_size):
+        conditioning = node_helpers.conditioning_set_values(conditioning, {"guidance": guidance})
+        guider = Guider_Basic(model)
+        guider.set_conds(conditioning)
+        
+        m = model.clone()
+        x1, x2 = 256, 4096
+        mm = (max_shift - base_shift) / (x2 - x1)
+        b = base_shift - mm * x1
+        shift = (width * height / (64 * 4)) * mm + b
 
+        class ModelSamplingAdvanced(comfy.model_sampling.ModelSamplingFlux, comfy.model_sampling.CONST): pass
+        model_sampling = ModelSamplingAdvanced(model.model.model_config)
+        model_sampling.set_parameters(shift=shift)
+        m.add_object_patch("model_sampling", model_sampling)
 
+        latent = {"samples": torch.zeros([batch_size, 4, height // 8, width // 8], device=self.device)}
+        latent_samples = comfy.sample.fix_empty_latent_channels(guider.model_patcher, latent["samples"])
+        noise_tensor = comfy.sample.prepare_noise(latent_samples, noise_seed)
+        sigmas = comfy.samplers.calculate_sigmas(m.get_model_object("model_sampling"), scheduler, steps).cpu()[-steps-1:].to(self.device)
+        sampler = comfy.samplers.sampler_object(sampler_name)
 
-#  Third Node
-class CalculateMinus:
+        x0_output = {}
+        callback = latent_preview.prepare_callback(guider.model_patcher, sigmas.shape[-1] - 1, x0_output)
+        samples = guider.sample(noise_tensor, latent_samples, sampler, sigmas, denoise_mask=latent.get("noise_mask"), callback=callback, disable_pbar=not comfy.utils.PROGRESS_BAR_ENABLED, seed=noise_seed)
+        
+        output_latent = {"samples": samples.to(comfy.model_management.intermediate_device())}
+        denoised_latent = output_latent.copy()
+        if "x0" in x0_output:
+            denoised_latent["samples"] = guider.model_patcher.model.process_latent_out(x0_output["x0"].cpu())
+            
+        return (output_latent, denoised_latent)
+
+# --- Узел 3: Семплер для Inpaint ---
+class DoomFluxInpaintSampler:
+    def __init__(self):
+        self.device = comfy.model_management.intermediate_device()
+
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "model": ("MY_MODEL", ),
-                "a": ("INT", ),
+                "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                "model": ("MODEL",),
+                "scheduler": (comfy.samplers.SCHEDULER_NAMES,),
+                "steps": ("INT", {"default": 20, "min": 1, "max": 10000}),
+                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0}),
+                "sampler_name": (comfy.samplers.SAMPLER_NAMES,),
+                "conditioning": ("CONDITIONING",),
+                "guidance": ("FLOAT", {"default": 3.5, "min": 0.0, "max": 100.0, "step": 0.1}),
+                "max_shift": ("FLOAT", {"default": 1.15, "min": 0.0, "max": 100.0, "step":0.01}),
+                "base_shift": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 100.0, "step":0.01}),
+                "noise_mask": ("BOOLEAN", {"default": True}),
             },
-            "optional": {
-                "b": ("INT", {"default": 10}),
-            }
+            "optional": { "image": ("IMAGE",), "mask": ("MASK",), "vae": ("VAE",) }
         }
 
-    RETURN_TYPES = ("INT",)
-    RETURN_NAMES = ("minus_value",)
-    FUNCTION = "minus"
-    CATEGORY = "CustomNodesTemplate"
+    RETURN_TYPES = ("LATENT", "LATENT")
+    RETURN_NAMES = ("output", "denoised_output")
+    FUNCTION = "sample"
+    CATEGORY = "DoomFlux/sampling"
 
-    def minus(self,
-             model: CalculatorModel,
-             a: Optional[int],
-             b: Optional[int],
-             ) -> Tuple[int]:
-        result = model.minus(a, b)
-        return (result, )
+    def sample(self, noise_seed, model, scheduler, steps, denoise, sampler_name, conditioning, guidance, max_shift, base_shift, noise_mask=True, image=None, mask=None, vae=None):
+        if image is not None and vae is not None and mask is not None:
+            mask = mask.reshape((-1, 1, mask.shape[-2], mask.shape[-1]))
+            mask = torch.nn.functional.interpolate(mask, size=(image.shape[1], image.shape[2]), mode="bilinear")
+            
+            x = (image.shape[1] // 8) * 8
+            y = (image.shape[2] // 8) * 8
+            orig_pixels = image
+            pixels = orig_pixels.clone()
+            
+            if image.shape[1] != x or image.shape[2] != y:
+                x_offset = (image.shape[1] % 8) // 2
+                y_offset = (image.shape[2] % 8) // 2
+                pixels = pixels[:, x_offset:x + x_offset, y_offset:y + y_offset, :]
+                mask = mask[:, :, x_offset:x + x_offset, y_offset:y + y_offset]
 
+            m = (1.0 - mask.round()).squeeze(1)
+            for i in range(3):
+                pixels[:,:,:,i] -= 0.5
+                pixels[:,:,:,i] *= m
+                pixels[:,:,:,i] += 0.5
+            
+            concat_latent = vae.encode(pixels)
+            orig_latent = vae.encode(orig_pixels)
+            
+            out_latent = {"samples": orig_latent}
+            if noise_mask:
+                out_latent["noise_mask"] = mask
+            
+            conditioning = node_helpers.conditioning_set_values(conditioning, {"concat_latent_image": concat_latent, "concat_mask": mask})
+        else:
+            raise ValueError("For inpainting, 'image', 'mask', and 'vae' inputs are required.")
 
+        conditioning = node_helpers.conditioning_set_values(conditioning, {"guidance": guidance})
+        guider = Guider_Basic(model)
+        guider.set_conds(conditioning)
 
-#  Output Node
-class ExampleOutputNode:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "value": ("INT", ),
-            },
-        }
+        m = model.clone()
+        width, height = image.shape[2], image.shape[1]
+        x1, x2 = 256, 4096
+        mm = (max_shift - base_shift) / (x2 - x1)
+        b = base_shift - mm * x1
+        shift = (width * height / (64 * 4)) * mm + b
 
-    #  If the node is output node, set this to True.
-    OUTPUT_NODE = True
-    RETURN_TYPES = ("INT",)
-    RETURN_NAMES = ("int",)
-    FUNCTION = "result"
-    CATEGORY = "CustomNodesTemplate"
+        class ModelSamplingAdvanced(comfy.model_sampling.ModelSamplingFlux, comfy.model_sampling.CONST): pass
+        model_sampling = ModelSamplingAdvanced(model.model.model_config)
+        model_sampling.set_parameters(shift=shift)
+        m.add_object_patch("model_sampling", model_sampling)
+        
+        latent_samples = comfy.sample.fix_empty_latent_channels(guider.model_patcher, out_latent["samples"])
+        noise_tensor = comfy.sample.prepare_noise(latent_samples, noise_seed)
+        sigmas = comfy.samplers.calculate_sigmas(m.get_model_object("model_sampling"), scheduler, steps).cpu()[-steps-1:].to(self.device)
+        sampler = comfy.samplers.sampler_object(sampler_name)
 
-    def result(self,
-               value: int,) -> Tuple[int]:
-        return (value, )
+        x0_output = {}
+        callback = latent_preview.prepare_callback(guider.model_patcher, sigmas.shape[-1] - 1, x0_output)
+        samples = guider.sample(noise_tensor, latent_samples, sampler, sigmas, denoise_mask=mask if noise_mask else None, callback=callback, disable_pbar=not comfy.utils.PROGRESS_BAR_ENABLED, seed=noise_seed)
+
+        output_latent = {"samples": samples.to(comfy.model_management.intermediate_device())}
+        denoised_latent = output_latent.copy()
+        if "x0" in x0_output:
+            denoised_latent["samples"] = guider.model_patcher.model.process_latent_out(x0_output["x0"].cpu())
+
+        return (output_latent, denoised_latent)

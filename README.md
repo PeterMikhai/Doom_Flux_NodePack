@@ -1,89 +1,69 @@
-# ComfyUI CustomNode Template
+# DoomFLUX Nodes for ComfyUI
 
-This is the [ComfyUI](https://github.com/comfyanonymous/ComfyUI) custom node template repository that anyone can use to create their own custom nodes.
+This repository contains a set of custom nodes for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), designed to work with the FLUX family of models. They include a convenient loader and custom samplers for standard generation and inpainting, which utilize the specific `shift` logic required by FLUX.
 
-## Directory Structure
-```
-Project-Name/
-├── .github/                # GA workflow for publishing the ComfyUI registry 
-├── workflows/              # Example workflows for your custom node
-├── modules/                # Your own modules for the custom node
-├── .gitignore              # gitignore file 
-├── __init__.py             # Map your custom node display names here 
-├── nodes.py                # Your custom node classes  
-├── README.md               # README file
-├── pyproject.toml          # Metadata file for the ComfyUI registry
-└── requirements.txt        # Project dependencies 
-```
+---
 
-## Custom Node Files
+## Included Nodes
 
-### [nodes.py](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/tree/master/nodes.py)
-This file is where your actual custom node classes are defined. The class has specific methods that are called by the ComfyUI engine.
-There're some basic custom nodes for the example with some comments, you can modify them as you need.
-For detailed information on how to create custom nodes, please refer to the ComfyUI official documentation: 
-- https://docs.comfy.org/essentials/custom_node_walkthrough.
+*   **DoomFLUX Loader**: Simplifies loading FLUX models. It allows selecting the diffusion model, VAE, and up to two text encoders (CLIP) in a single node. It also supports loading models with reduced precision (fp8).
+*   **DoomFLUX Sampler**: A custom sampler for image generation. It automatically calculates and applies the `shift` parameter required for FLUX models to work correctly, based on the image resolution.
+*   **DoomFLUX Inpaint Sampler**: A specialized sampler for inpainting. It prepares the mask and image, then uses the same `shift` logic as the main sampler to generate only within the masked area.
 
-### [__init__.py](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/tree/master/__init__.py)
-You can map your custom node display names here. It will be used when users search for your custom node in the ComfyUI.
-
-### [pyproject.toml](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/tree/master/pyproject.toml)
-This file is used to publish your custom node to the ComfyUI registry. If you want to publish your custom node to the ComfyUI registry, you need to modify this file.
-
-If you wonder what ComfyUI registry is, please read:
-
-- https://docs.comfy.org/registry/overview#why-use-the-registry
-
-### [requirements.txt](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/tree/master/requirements.txt)
-This file contains the dependencies needed for your custom node. `torch` is already installed in the ComfyUI, so you only need to add "extra" dependencies here.
-
-### [workflows/example-1.json](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/tree/master/workflows)
-This is optional, but it is recommended to put your ComfyUI workflow json file inside your project so users can easily understand how to use your custom node.
-
-## Github Actions
-
-### [publish-comfyui-registry.yml](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/tree/master/.github/workflows/publish-comfyui-registry.yml)
-When you push into the `master` branch, this workflow will be triggered and publish your custom node to the ComfyUI registry, using your [pyproject.toml](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/tree/master/pyproject.toml).
-You have to register your "REGISTRY_ACCESS_TOKEN" in the Github Action Secrets which you can get from:
-- https://docs.comfy.org/registry/publishing#create-an-api-key-for-publishing
-
-After generating the repository from this template, uncomment the push to enable the workflow with auto trigger:
-
-https://github.com/jhj0517/ComfyUI-CustomNodes-Template/blob/6ae10a1d161933c5e3cff432e1c8bbc9396be954/.github/workflows/publish-comfyui-registry.yml#L4-L10
-
-## Github Issue & PR templates
-
-There are some basic templates for the Github issues & PR. You can edit them or add more to fit your project's needs.
-
-- Issue Templates:
-  1. [bug_report.md](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/blob/master/.github/ISSUE_TEMPLATE/bug_report.md) : Basic bug report template
-  2. [feature_request.md](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/blob/master/.github/ISSUE_TEMPLATE/feature_request.md) : Feature request template
-
-- PR Template: [pull_request_template.md](https://github.com/jhj0517/ComfyUI-CustomNodes-Template/blob/master/.github/pull_request_template.md)
-
-
-## How to Strat Using Template
-
-Click "Use this template" -> "Create a new repository", then you can create your own custom node from there.
-
-![image](https://github.com/user-attachments/assets/fab4da53-0458-4e88-adc1-5bb5d341a511)
-
-The custom node installation guide below can usually be used for any custom node, you can use it in your README by modifying the repository name and URL.
 ## Installation
 
-1. git clone repository into `ComfyUI\custom_nodes\`
-```
-git clone https://github.com/replace-this-with-your-github-repository-url.git
-```
+1.  Navigate to your `ComfyUI/custom_nodes/` directory.
+2.  Clone this repository:
+    ```
+    https://github.com/PeterMikhai/Doom_Flux_NodePack.git
+    ```
+3.  Restart ComfyUI. The nodes will appear in the `DoomFlux` category.
 
-2. Go to `ComfyUI\custom_nodes\ComfyUI-Your-CustomNode-Name` and run
-```
-pip install -r requirements.txt
-```
+This package currently has no external dependencies, so you don't need to run `pip install`.
 
-If you are using the portable version of ComfyUI, do this:
-```
-python_embeded\python.exe -m pip install -r ComfyUI\custom_nodes\ComfyUI-Your-CustomNode-Name\requirements.txt
-```
+## Example Workflow
 
+While a visual workflow (`.json`) is the best guide, here is the basic connection logic:
 
+1.  Use the **DoomFLUX Loader** to load the model, VAE, and CLIP.
+2.  Connect the `MODEL` output to a **DoomFLUX Sampler** or **DoomFLUX Inpaint Sampler**.
+3.  Connect the `CLIP` output to your text encoder nodes (e.g., `CLIPTextEncodeFlux`).
+4.  Build your `conditioning` from the text encoders and feed it into the sampler.
+5.  Feed the resulting `LATENT` from the sampler into a `VAE Decode` node to get the final image.
+
+---
+
+## --- Русский ---
+
+# DoomFLUX Nodes для ComfyUI
+
+Этот репозиторий содержит набор кастомных узлов для [ComfyUI](https://github.com/comfyanonymous/ComfyUI), предназначенных для работы с моделями семейства FLUX. Они включают в себя удобный загрузчик, а также кастомные семплеры для стандартной генерации и инпеинтинга, которые используют специфическую логику `shift`, необходимую для FLUX.
+
+---
+
+## Включенные узлы
+
+*   **DoomFLUX Loader**: Упрощает загрузку моделей FLUX. Позволяет в одном узле выбрать диффузионную модель, VAE и до двух текстовых энкодеров (CLIP). Также поддерживает загрузку моделей с пониженной точностью (fp8).
+*   **DoomFLUX Sampler**: Кастомный семплер для генерации изображений. Автоматически вычисляет и применяет параметр `shift`, необходимый для корректной работы моделей FLUX, на основе разрешения изображения.
+*   **DoomFLUX Inpaint Sampler**: Специализированный семплер для инпеинтинга. Он подготавливает маску и изображение, а затем использует ту же логику `shift`, что и основной семплер, для генерации только в замаскированной области.
+
+## Установка
+
+1.  Перейдите в директорию `ComfyUI/custom_nodes/` на вашем компьютере.
+2.  Клонируйте этот репозиторий с помощью команды:
+    ```
+    https://github.com/PeterMikhai/Doom_Flux_NodePack.git
+    ```  
+3.  Перезапустите ComfyUI. Новые узлы появятся в категории `DoomFlux`.
+
+У этого пакета на данный момент нет внешних зависимостей, поэтому запускать `pip install` не требуется.
+
+## Пример рабочего процесса
+
+Хотя визуальный воркфлоу (`.json`) является лучшим руководством, вот базовая логика соединений:
+
+1.  Используйте **DoomFLUX Loader** для загрузки модели, VAE и CLIP.
+2.  Подключите выход `MODEL` к узлу **DoomFLUX Sampler** или **DoomFLUX Inpaint Sampler**.
+3.  Подключите выход `CLIP` к узлам энкодера текста (например, `CLIPTextEncodeFlux`).
+4.  Сформируйте `conditioning` из текстовых энкодеров и подайте его на вход семплера.
+5.  Подайте итоговый `LATENT` из семплера на вход узла `VAE Decode`, чтобы получить финальное изображение.
