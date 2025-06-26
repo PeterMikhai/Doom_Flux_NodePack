@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - master # Ваша ветка называется master
     paths:
       - "pyproject.toml"
 
@@ -11,14 +11,14 @@ jobs:
   publish-node:
     name: Publish Custom Node to registry
     runs-on: ubuntu-latest
-    # if this is a forked repository. Skipping the workflow.
-    if: github.event.repository.fork == false 
+    # Эта проверка нужна, чтобы воркфлоу не запускался на форках
+    if: github.repository_owner == 'PeterMikhai'
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+
       - name: Publish Custom Node
         uses: Comfy-Org/publish-node-action@main
         with:
-          ## Add your own personal access token to your Github Repository secrets and reference it here.
-          ## Get your personal access token from https://docs.comfy.org/registry/publishing#create-an-api-key-for-publishing
+          # Эта строка говорит GitHub взять токен из секретов
           personal_access_token: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
