@@ -21,17 +21,29 @@ This repository contains a set of custom nodes for [ComfyUI](https://github.com/
 
 This package currently has no external dependencies, so you don't need to run `pip install`.
 
-## Example Workflow
+## Workflow Examples / Примеры рабочих процессов
 
-While a visual workflow (`.json`) is the best guide, here is the basic connection logic:
-
-1.  Use the **DoomFLUX Loader** to load the model, VAE, and CLIP.
-2.  Connect the `MODEL` output to a **DoomFLUX Sampler** or **DoomFLUX Inpaint Sampler**.
-3.  Connect the `CLIP` output to your text encoder nodes (e.g., `CLIPTextEncodeFlux`).
-4.  Build your `conditioning` from the text encoders and feed it into the sampler.
-5.  Feed the resulting `LATENT` from the sampler into a `VAE Decode` node to get the final image.
+Below are examples demonstrating how to use the DoomFLUX nodes. **You can simply drag and drop these images directly into ComfyUI to load the entire workflow!**
 
 ---
+
+### Text-to-Image with FLUX
+
+A basic workflow for generating images from text using the `DoomFLUX Loader` and `DoomFLUX Sampler`.
+
+*   [Download workflow file (.json)](./workflows/Doom_flux_txt2img.json)
+
+![Text-to-Image Example](./examples/Doom_flux_txt2img.png)
+
+---
+
+### Inpainting with FLUX
+
+An example of how to use the `DoomFLUX Inpaint Sampler` for modifying specific parts of an image.
+
+*   [Download workflow file (.json)](./workflows/Doom_Flux_inpaint.json)
+
+![Inpainting Example](./examples/Doom_Flux_inpaint.png)
 
 ## --- Русский ---
 
@@ -58,12 +70,26 @@ While a visual workflow (`.json`) is the best guide, here is the basic connectio
 
 У этого пакета на данный момент нет внешних зависимостей, поэтому запускать `pip install` не требуется.
 
-## Пример рабочего процесса
+## Примеры рабочих процессов / Workflow Examples
 
-Хотя визуальный воркфлоу (`.json`) является лучшим руководством, вот базовая логика соединений:
+Ниже приведены примеры, демонстрирующие использование узлов DoomFLUX. **Вы можете просто перетащить эти картинки в окно ComfyUI, чтобы загрузить всю схему!**
 
-1.  Используйте **DoomFLUX Loader** для загрузки модели, VAE и CLIP.
-2.  Подключите выход `MODEL` к узлу **DoomFLUX Sampler** или **DoomFLUX Inpaint Sampler**.
-3.  Подключите выход `CLIP` к узлам энкодера текста (например, `CLIPTextEncodeFlux`).
-4.  Сформируйте `conditioning` из текстовых энкодеров и подайте его на вход семплера.
-5.  Подайте итоговый `LATENT` из семплера на вход узла `VAE Decode`, чтобы получить финальное изображение.
+---
+
+### Текст в картинку с помощью FLUX
+
+Базовый рабочий процесс для генерации изображений из текста с использованием `DoomFLUX Loader` и `DoomFLUX Sampler`.
+
+*   [Скачать файл воркфлоу (.json)](./workflows/Doom_flux_txt2img.json)
+
+![Пример Текст-в-картинку](./examples/Doom_flux_txt2img.png)
+
+---
+
+### Инпеинтинг с помощью FLUX
+
+Пример использования `DoomFLUX Inpaint Sampler` для изменения определенных частей изображения.
+
+*   [Скачать файл воркфлоу (.json)](./workflows/Doom_Flux_inpaint.json)
+
+![Пример инпеинтинга](./examples/Doom_Flux_inpaint.png)

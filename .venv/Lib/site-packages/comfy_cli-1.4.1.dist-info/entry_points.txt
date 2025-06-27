@@ -1,0 +1,4 @@
+[console_scripts]
+comfy = comfy_cli.__main__:main
+comfy-cli = comfy_cli.__main__:main
+comfycli = comfy_cli.__main__:main
