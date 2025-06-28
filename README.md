@@ -23,27 +23,29 @@ This package currently has no external dependencies, so you don't need to run `p
 
 ## Workflow Examples / Примеры рабочих процессов
 
-Below are examples demonstrating how to use the DoomFLUX nodes. **You can simply drag and drop these images directly into ComfyUI to load the entire workflow!**
+Below are examples demonstrating how to use the DoomFLUX nodes. The generated images on the left can be dragged and dropped directly into ComfyUI to load the workflow.
 
 ---
 
 ### Text-to-Image with FLUX
 
-A basic workflow for generating images from text using the `DoomFLUX Loader` and `DoomFLUX Sampler`.
+*   [Download workflow file (.json)](./workflows/flux_txt2img_example.json)
 
-*   [Download workflow file (.json)](./workflows/Doom_flux_txt2img.json)
-
-![Text-to-Image Example](./examples/Doom_flux_txt2img.png)
+| Generated Result (Drag-and-Drop) | Workflow Structure |
+| :---: | :---: |
+| ![Text-to-Image Example](./examples/flux_txt2img_example.png) | ![Text-to-Image Workflow](./examples/flux_txt2img_workflow.png) |
 
 ---
 
 ### Inpainting with FLUX
 
-An example of how to use the `DoomFLUX Inpaint Sampler` for modifying specific parts of an image.
+*   [Download workflow file (.json)](./workflows/flux_inpaint_example.json)
 
-*   [Download workflow file (.json)](./workflows/Doom_Flux_inpaint.json)
+| Generated Result (Drag-and-Drop) | Workflow Structure |
+| :---: | :---: |
+| ![Inpainting Example](./examples/flux_inpaint_example.png) | ![Inpainting Workflow](./examples/flux_inpaint_workflow.png) |
 
-![Inpainting Example](./examples/Doom_Flux_inpaint.png)
+---
 
 ## --- Русский ---
 
@@ -72,24 +74,24 @@ An example of how to use the `DoomFLUX Inpaint Sampler` for modifying specific p
 
 ## Примеры рабочих процессов / Workflow Examples
 
-Ниже приведены примеры, демонстрирующие использование узлов DoomFLUX. **Вы можете просто перетащить эти картинки в окно ComfyUI, чтобы загрузить всю схему!**
+Ниже приведены примеры использования узлов DoomFLUX. Изображения слева можно перетащить прямо в окно ComfyUI, чтобы загрузить рабочий процесс.
 
 ---
 
 ### Текст в картинку с помощью FLUX
 
-Базовый рабочий процесс для генерации изображений из текста с использованием `DoomFLUX Loader` и `DoomFLUX Sampler`.
+*   [Скачать файл воркфлоу (.json)](./workflows/flux_txt2img_example.json)
 
-*   [Скачать файл воркфлоу (.json)](./workflows/Doom_flux_txt2img.json)
-
-![Пример Текст-в-картинку](./examples/Doom_flux_txt2img.png)
+| Сгенерированный результат (можно перетащить) | Структура рабочего процесса |
+| :---: | :---: |
+| ![Пример Текст-в-картинку](./examples/flux_txt2img_example.png) | ![Воркфлоу Текст-в-картинку](./examples/flux_txt2img_workflow.png) |
 
 ---
 
 ### Инпеинтинг с помощью FLUX
 
-Пример использования `DoomFLUX Inpaint Sampler` для изменения определенных частей изображения.
+*   [Скачать файл воркфлоу (.json)](./workflows/flux_inpaint_example.json)
 
-*   [Скачать файл воркфлоу (.json)](./workflows/Doom_Flux_inpaint.json)
-
-![Пример инпеинтинга](./examples/Doom_Flux_inpaint.png)
+| Сгенерированный результат (можно перетащить) | Структура рабочего процесса |
+| :---: | :---: |
+| ![Пример инпеинтинга](./examples/flux_inpaint_example.png) | ![Воркфлоу инпеинтинга](./examples/flux_inpaint_workflow.png) |
