@@ -1,0 +1,406 @@
+{
+  "id": "5f903a22-f811-4b55-9b28-d835d02427f0",
+  "revision": 0,
+  "last_node_id": 25,
+  "last_link_id": 42,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        1573.50244140625,
+        2002.212646484375
+      ],
+      "size": [
+        274.080078125,
+        314.0001220703125
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            13
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.41",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "pixai-1885987086901280421-0.png",
+        "image"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [
+        1852.992919921875,
+        1749.3524169921875
+      ],
+      "size": [
+        320.4163513183594,
+        187.43414306640625
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 39
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.41",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "cat"
+      ]
+    },
+    {
+      "id": 24,
+      "type": "DoomFluxSamplerAdvanced",
+      "pos": [
+        2188.47412109375,
+        1754.1583251953125
+      ],
+      "size": [
+        304.5337829589844,
+        550.0001220703125
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 41
+        },
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 36
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 35
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            38
+          ]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-doomflux-nodes",
+        "ver": "ef1b8e2a83d9f0fc9d8001af13dd106c1d6d4d2f",
+        "Node name for S&R": "DoomFluxSamplerAdvanced"
+      },
+      "widgets_values": [
+        597024800614190,
+        "randomize",
+        30,
+        "euler",
+        "normal",
+        0,
+        10000,
+        3.5,
+        1.15,
+        0.5,
+        0.8000000000000002
+      ]
+    },
+    {
+      "id": 15,
+      "type": "VAEEncode",
+      "pos": [
+        1861.8876953125,
+        1980.919189453125
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pixels",
+          "type": "IMAGE",
+          "link": 13
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 40
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            35
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.41",
+        "Node name for S&R": "VAEEncode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 4,
+      "type": "PreviewImage",
+      "pos": [
+        2513.681640625,
+        1751.275146484375
+      ],
+      "size": [
+        552.4144287109375,
+        321.8958740234375
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 2
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.41",
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 7,
+      "type": "VAEDecode",
+      "pos": [
+        2018.5770263671875,
+        1979.5264892578125
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 38
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 42
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.41",
+        "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 25,
+      "type": "DoomFluxLoader",
+      "pos": [
+        1573.5946044921875,
+        1747.9244384765625
+      ],
+      "size": [
+        264.79840087890625,
+        205.0534210205078
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            41
+          ]
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            40,
+            42
+          ]
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            39
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-doomflux-nodes",
+        "ver": "ef1b8e2a83d9f0fc9d8001af13dd106c1d6d4d2f",
+        "Node name for S&R": "DoomFluxLoader"
+      },
+      "widgets_values": [
+        "Flux\\flux1-dev-fp8-noclip.safetensors",
+        "ae.safetensors",
+        "clip_l.safetensors",
+        "t5xxl_fp8_e4m3fn.safetensors",
+        "default"
+      ]
+    }
+  ],
+  "links": [
+    [
+      2,
+      7,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      13,
+      1,
+      0,
+      15,
+      0,
+      "IMAGE"
+    ],
+    [
+      35,
+      15,
+      0,
+      24,
+      2,
+      "LATENT"
+    ],
+    [
+      36,
+      5,
+      0,
+      24,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      38,
+      24,
+      0,
+      7,
+      0,
+      "LATENT"
+    ],
+    [
+      39,
+      25,
+      2,
+      5,
+      0,
+      "CLIP"
+    ],
+    [
+      40,
+      25,
+      1,
+      15,
+      1,
+      "VAE"
+    ],
+    [
+      41,
+      25,
+      0,
+      24,
+      0,
+      "MODEL"
+    ],
+    [
+      42,
+      25,
+      1,
+      7,
+      1,
+      "VAE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.0610764609500063,
+      "offset": [
+        -1324.8064927138892,
+        -1619.6512639183975
+      ]
+    },
+    "frontendVersion": "1.22.2",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

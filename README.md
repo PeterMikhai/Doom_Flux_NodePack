@@ -46,6 +46,18 @@ Below are examples demonstrating how to use the DoomFLUX nodes. The generated im
 | ![Inpainting Example](./examples/flux_inpaint_example.png) | ![Inpainting Workflow](./examples/flux_inpaint_workflow.png) |
 
 ---
+### Advanced Sampler (Image-to-Image)
+
+An advanced sampler for `img2img` tasks, providing full control over the denoising process, similar to KSamplerAdvanced.
+
+*   [Download workflow file (.json)](./workflows/flux_img2img_example.json)
+
+| Generated Result (Drag-and-Drop) | Workflow Structure |
+| :---: | :---: |
+| ![Advanced Sampler Example](./examples/flux_img2img_example.png) | ![Advanced Sampler Workflow](./examples/flux_img2img_workflow.png) |
+
+---
+
 
 ## --- Русский ---
 
@@ -95,3 +107,13 @@ Below are examples demonstrating how to use the DoomFLUX nodes. The generated im
 | Сгенерированный результат (можно перетащить) | Структура рабочего процесса |
 | :---: | :---: |
 | ![Пример инпеинтинга](./examples/flux_inpaint_example.png) | ![Воркфлоу инпеинтинга](./examples/flux_inpaint_workflow.png) |
+
+### Картинка в картинку (Image-to-Image)
+
+Продвинутый семплер для задач `img2img`, который дает полный контроль над процессом "разшумливания", аналогично KSamplerAdvanced.
+
+*   [Скачать файл воркфлоу (.json)](./workflows/flux_img2img_example.json)
+
+| Сгенерированный результат (можно перетащить) | Структура рабочего процесса |
+| :---: | :---: |
+| ![Пример продвинутого семплера](./examples/flux_img2img_example.png) | ![Воркфлоу продвинутого семплера](./examples/flux_img2img_workflow.png) |
