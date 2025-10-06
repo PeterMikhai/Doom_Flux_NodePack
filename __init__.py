@@ -1,25 +1,33 @@
-# __init__.py
+from .nodes import (
+    DoomFluxLoader,
+    DoomFluxLoader_GGUF,
+    DoomFluxSampler,
+    DoomFluxInpaintSampler,
+    DoomFluxSamplerAdvanced,
+    DoomFluxSuperLoader,
+)
 
-# Импортируем все классы узлов из файла nodes.py
-from .nodes import DoomFluxLoader, DoomFluxSampler, DoomFluxInpaintSampler, DoomFluxSamplerAdvanced
-
-# Словарь для сопоставления внутренних имен классов с их реализациями
 NODE_CLASS_MAPPINGS = {
     "DoomFluxLoader": DoomFluxLoader,
+    "DoomFluxLoader_GGUF": DoomFluxLoader_GGUF,
     "DoomFluxSampler": DoomFluxSampler,
     "DoomFluxInpaintSampler": DoomFluxInpaintSampler,
     "DoomFluxSamplerAdvanced": DoomFluxSamplerAdvanced,
+    "DoomFluxSuperLoader": DoomFluxSuperLoader,
 }
 
-# Словарь для сопоставления внутренних имен с отображаемыми именами в интерфейсе
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "DoomFluxLoader": "DoomFLUX Loader",
-    "DoomFluxSampler": "DoomFLUX Sampler",
-    "DoomFluxInpaintSampler": "DoomFLUX Inpaint Sampler",
-    "DoomFluxSamplerAdvanced": "DoomFLUX Sampler (Advanced)",
+    "DoomFluxLoader": "DoomFlux Loader",
+    "DoomFluxLoader_GGUF": "DoomFlux Loader (GGUF)",
+    "DoomFluxSampler": "DoomFlux Sampler",
+    "DoomFluxInpaintSampler": "DoomFlux Inpaint Sampler",
+    "DoomFluxSamplerAdvanced": "DoomFlux Sampler Advanced",
+    "DoomFluxSuperLoader": "DoomFlux Super Loader",
 }
 
-# Версия вашего пакета и индикатор загрузки
-__version__ = "1.2.0" # Обновили версию, так как добавили новый узел
-print(f"### DoomFLUX Nodes v{__version__}: Loaded successfully.")
+__all__ = [
+    "NODE_CLASS_MAPPINGS",
+    "NODE_DISPLAY_NAME_MAPPINGS",
+]
 
+print("DoomFLUX Nodes v1.3.0 Loaded successfully.")
